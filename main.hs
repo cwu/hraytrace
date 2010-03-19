@@ -18,10 +18,10 @@ res = filter (\(x,_,_) -> not x) $ zip3 (map (\(a,b) -> a == b) $ zip answers re
 main = if (not . null) res then putStrLn "Failure" else putStrLn "Pass"
 -}
 objs = [(Sphere (V 100 0 0) 80, green),(Sphere (V (10) 1 0) 6, blue)]
-lights = [(V 100 100 100, (0.1, 0.1, 0.1))]
+lights = [(V 0 10 0, (0.1, 0.1, 0.1))]
 world = (objs, lights)
-camera = (o, i, j)
-screen = (100, 100, 6.0)
+camera = (o, i, k)
+screen = (100, 100, 6.0, 180)
 pixelrays = mkpixelrays camera screen
 
 fst3 (x,_,_) = x
@@ -44,12 +44,12 @@ fc :: Eq a => [a] -> [(a,Int)]
 fc = findCounts []
 
 make_ppm :: Integer -> Integer -> [Color] -> String
-make_ppm w h disp = "P3\n" ++ show w ++ " " ++ show h ++ "\n255\n" ++ stringify (map toRGB disp)
+make_ppm w h disp = "P3\n" ++ show w ++ " " ++ show h ++ "\n255" ++ stringify (map toRGB disp)
 	where 
-		stringify [] = ""
-		stringify ((r,g,b):xs) = " " ++ show r ++ " " ++ show g ++ " " ++ show b ++ stringify xs
+		stringify [] = "\n"
+		stringify ((r,g,b):xs) = "\n" ++ show r ++ " " ++ show g ++ " " ++ show b ++ stringify xs
 
 traceToFile :: Screen -> [Color] -> IO ()
-traceToFile (w,h,_) display = writeFile "display.ppm" (make_ppm w h display)
+traceToFile (w,h,_,_) display = writeFile "display.ppm" (make_ppm w h display)
 ppm = traceToFile screen display
 		
