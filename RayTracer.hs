@@ -4,25 +4,27 @@ import Vector
 import Geometry
 
 type Camera = (Point, Vector, Vector)
-type PixelRay = (Integer, Integer, Ray)
+type PixelRay = (Integer, Integer, Ray, Ray, Ray)
 type Screen = (Integer, Integer, Double, Double)
 
 mkcamera :: Point -> Vector -> Vector -> Camera
 mkcamera p dir up = (p, norm dir, norm up)
 
 mkpixelrays :: Camera -> Screen -> [PixelRay]
-mkpixelrays (pos, dir, up) (width, height, dist, aov) = let
+mkpixelrays (pos, dir, up) (width, height, dist, pixelSize) = let
 		centre = pos + scale dist dir
 		d = - dir `dot` centre
-		down = scale 0.3 $ norm $ up `proj` dir - up
-		right = scale 0.3 $ norm $ down * dir 
+		down = scale pixelSize $ norm $ up `proj` dir - up
+		right = scale pixelSize $ norm $ down * dir 
 
 		v = - (scale (fromInteger (width-1) / 2) right) - (scale (fromInteger (height-1) / 2) down)
 		topLeft = centre + v
 
-		getPixelPos :: Integer -> Integer -> Point
-		getPixelPos r c = topLeft + scale (fromInteger r) down + scale (fromInteger c) right
-	in [(r, c, mkray pos (getPixelPos r c))	| r <- [0..height-1], c <- [0..width-1]]
+		pixelPos :: Integer -> Integer -> Point
+		pixelPos r c = topLeft + scale (fromInteger r) down + scale (fromInteger c) right
+	in [(r, c, 
+		mkray pos (pixelPos r c), mkray pos (pixelPos (r+1) c), mkray pos (pixelPos r (c+1)))
+			| r <- [0..height-1], c <- [0..width-1]]
 
 
 type Color = (Double, Double, Double)
@@ -53,6 +55,7 @@ type ColorRGB = (Int, Int, Int)
 toRGB :: Color -> ColorRGB
 toRGB (r,g,b) = (floor (r * 255), floor (g * 255), floor (b * 255))
 
+data AliasType = NoAlias | SuperSample deriving (Eq, Show)
 type Object = (Shape, Color)
 type LightSource = (Point,Color)
 type World = ([Object], [LightSource])
@@ -80,4 +83,14 @@ lighting (objs, lights) (Sphere centre radius,c) p = clamp $ scale_col brightnes
 		brightness = sum $ map (\ray -> (normal `dot` ray) / (mag ray)) tolights
 		tolights = map (\(lightPos, _) -> lightPos - p) lights
 		
+
+render :: World -> PixelRay -> Color
+render world (_, _, (p,topLeft), (_,bottomLeft), (_,topRight)) = let
+		ndiv = 3
+		div = 1 / ndiv
+		down = scale div $ bottomLeft - topLeft
+		right = scale div $ topRight - topLeft
+		
+		raylets = [(p, topLeft + (scale r down) + (scale c right)) | r <- [1..ndiv], c <-[1..ndiv]]
+	in scale_col (1/(ndiv * ndiv)) $ foldl (\acc -> add_col acc . trace world) (0,0,0) raylets
 

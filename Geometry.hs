@@ -51,18 +51,6 @@ closest xs = foldl1 (\(s1,t1) (s2,t2) -> if t1 < t2 then (s1,t1) else (s2,t2)) x
 normal :: Shape -> Point -> Vector
 normal (Sphere c _) p = p - c
 
-{-reflect :: Shape -> Ray -> Maybe Ray
-reflect s r@(_,d) = case x@(intersect s r) of 
-						[] 		  -> Nothing
-						otherwise -> let 
-										t = snd 
-										p' = ray_pos r t
-										n  = normal s p'
-										d' = d - scale 2 (proj d n)
-									in Just (mkray p' d')
--}
-
-
 roots2 :: (Ord a, Floating a) => a -> a -> a -> [a]
 roots2 a b c 
 	| discrim <  0 	= []

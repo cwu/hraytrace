@@ -1,8 +1,6 @@
-import Geometry
 import Vector
+import Geometry
 import RayTracer
-
-x = V 1 1 1
 
 {-
 r = [ray_mk (V 0 0 0) (V 1 0 0), ray_mk (V 0 0 0) (V (-1) 0 0)]
@@ -21,14 +19,14 @@ objs = [(Sphere (V 100 0 0) 80, green),(Sphere (V (10) 1 0) 6, blue)]
 lights = [(V 0 10 0, (0.1, 0.1, 0.1))]
 world = (objs, lights)
 camera = (o, i, k)
-screen = (100, 100, 6.0, 180)
+screen = (100, 100, 6.0, 0.3)
 pixelrays = mkpixelrays camera screen
 
 fst3 (x,_,_) = x
 snd3 (_,x,_) = x
 thr3 (_,_,x) = x
 
-display = map (trace world . thr3) pixelrays
+display = map (render world) pixelrays
 
 count :: Eq a => [a] -> a -> Int
 count xs x = length (filter (==x) xs)
@@ -53,3 +51,4 @@ traceToFile :: Screen -> [Color] -> IO ()
 traceToFile (w,h,_,_) display = writeFile "display.ppm" (make_ppm w h display)
 ppm = traceToFile screen display
 		
+main = ppm

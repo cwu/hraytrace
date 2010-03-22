@@ -3,3 +3,8 @@
 *.stackdump
 *.ppm
 *.png
+*.exe
+*.exe.*
+*.hi
+*.o
+*.prof
