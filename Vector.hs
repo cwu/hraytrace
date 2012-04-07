@@ -7,8 +7,8 @@ instance Num Vector where
 	(V x y z) - (V a b c) = V (x-a) (y-b) (z-c)
 	(V x y z) * (V a b c) = V (y * c - z * b) (z * a - x * c) (x * b - y * a)
 	negate = scale (-1)
-	abs _ = error "abs Vector not impelemented" 
-	signum _ = error "signum Vector not implemented" 
+	abs _ = error "abs Vector not impelemented"
+	signum _ = error "signum Vector not implemented"
 	fromInteger _ =  error "fromInteger Vector not impelmented"
 
 dot :: Vector -> Vector -> Double

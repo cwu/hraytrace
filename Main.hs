@@ -15,7 +15,7 @@ res = filter (\(x,_,_) -> not x) $ zip3 (map (\(a,b) -> a == b) $ zip answers re
 
 main = if (not . null) res then putStrLn "Failure" else putStrLn "Pass"
 -}
-objs = [(Sphere (V 100 0 0) 80, green),(Sphere (V (10) 1 0) 6, blue)]
+objs = [(Sphere (V 100 0 0) 80, green),(Sphere (V 10 1 0) 6, blue)]
 lights = [(V 0 10 0, (0.1, 0.1, 0.1))]
 world = (objs, lights)
 camera = (o, i, k)
@@ -31,24 +31,24 @@ display = map (render world) pixelrays
 count :: Eq a => [a] -> a -> Int
 count xs x = length (filter (==x) xs)
 
-is_in :: Eq a => a -> [(a,b)] -> Bool
-is_in _ [] = False
-is_in y (x:xs) = if fst x == y then True else is_in y xs
+isIn :: Eq a => a -> [(a,b)] -> Bool
+isIn _ [] = False
+isIn y (x:xs) = (fst x == y) || isIn y xs
 
 findCounts acc [] = acc
-findCounts acc (x:xs) = if x `is_in` acc then findCounts acc xs else findCounts ((x, 1 + count xs x) : acc) xs
+findCounts acc (x:xs) = if x `isIn` acc then findCounts acc xs else findCounts ((x, 1 + count xs x) : acc) xs
 
 fc :: Eq a => [a] -> [(a,Int)]
 fc = findCounts []
 
-make_ppm :: Integer -> Integer -> [Color] -> String
-make_ppm w h disp = "P3\n" ++ show w ++ " " ++ show h ++ "\n255" ++ stringify (map toRGB disp)
-	where 
+makePpm :: Integer -> Integer -> [Color] -> String
+makePpm w h disp = "P3\n" ++ show w ++ " " ++ show h ++ "\n255" ++ stringify (map toRGB disp)
+	where
 		stringify [] = "\n"
 		stringify ((r,g,b):xs) = "\n" ++ show r ++ " " ++ show g ++ " " ++ show b ++ stringify xs
 
 traceToFile :: Screen -> [Color] -> IO ()
-traceToFile (w,h,_,_) display = writeFile "display.ppm" (make_ppm w h display)
+traceToFile (w,h,_,_) display = writeFile "display.ppm" (makePpm w h display)
 ppm = traceToFile screen display
-		
+
 main = ppm
