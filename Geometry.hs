@@ -1,3 +1,4 @@
+module Geometry where
 import Algebra
 
 epsilon = 1e-4
@@ -5,8 +6,8 @@ epsilon = 1e-4
 data Shape = Sphere Point Double -- Sphere center radius
               deriving (Eq, Show)
 
-intersect :: Shape -> Ray -> Maybe Intersection
-intersect (Sphere c r) (Ray o d) 
+intersect :: Ray -> Shape -> Maybe Intersection
+intersect (Ray o d) (Sphere c r)
   | null positiveRoots = Nothing
   | otherwise          = Just (Intersection p (norm (-d)) t)
   where
