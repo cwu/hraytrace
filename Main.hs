@@ -21,7 +21,7 @@ sphere1 = Sphere (V 0 0 (-4)) 1
 sphere2 = Sphere (V 2.5 0 (-4)) 0.5
 material1 = Material (Color 1.0 0.0 0.0) (Color 1 1 1) 20
 material2 = Material (Color 0.0 1.0 0.0) (Color 1 1 1) 20
-scene = Scene [(Object sphere1 material1), (Object sphere2 material2)]
+scene = Scene [Object sphere1 material1, Object sphere2 material2]
 light = Light (V 1300 0 (-4)) (Color 0.8 0.8 0.8) (Color 0.8 0.8 0.8)
 world = World scene [light] (Color 0.3 0.3 0.3)
 
