@@ -9,7 +9,7 @@ data Shape = Sphere Point Double -- Sphere center radius
 intersect :: Ray -> Shape -> Maybe Intersection
 intersect (Ray o d) (Sphere c r)
   | null positiveRoots = Nothing
-  | otherwise          = Just (Intersection p (norm (-d)) t)
+  | otherwise          = Just (Intersection p (norm (p-c)) t)
   where
     v             = o - c
     roots         = roots2 (sqrMag d) (scale 2 v `dot` d) (sqrMag v - r*r)
