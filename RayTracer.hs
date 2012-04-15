@@ -44,7 +44,7 @@ getRays screen@(Screen w h _ resolution) camera =
 
 render :: World -> Screen -> Camera -> [Color]
 render world screen camera@(Camera eye _ _) =
-  map (avg . map rayTracer) $ getRays screen camera
+  map (clampColor . avg . map rayTracer) $ getRays screen camera
   where
     rayTracer = rayTrace world eye
     avg xs = scaleColor (1 / (fromIntegral (length xs))) (foldl1 (+) xs)
