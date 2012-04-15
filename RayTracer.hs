@@ -11,6 +11,31 @@ data Scene = Scene [Object] deriving (Eq, Show)
 -- World scene lights
 data World = World Scene [Light] deriving (Eq, Show)
 
+-- Screen width height fov
+data Screen = Screen Double Double Double deriving (Eq, Show)
+
+-- Camera position viewVector upVector
+data Camera = Camera Point Vector Vector deriving (Eq, Show)
+
+calculateRay :: Screen -> Camera -> Double -> Double -> Ray
+calculateRay (Screen w h fov) (Camera cp view up) x y =
+  Ray cp (norm dir)
+  where
+    side     = view * up
+    distance = (h / 2) / tan (fov / 2)
+    dirSide  = scale (x - w / 2) side
+    dirUp    = scale (y - h / 2) up
+    dirView  = scale distance view
+    dir      = dirSide + dirUp + dirView
+
+getRays :: Screen -> Camera -> [Ray]
+getRays screen@(Screen w h _) camera = 
+  map (uncurry (calculateRay screen camera)) [(x,y) | x <- [0..w-1], y <- [0..h-1]]
+
+render :: World -> Screen -> Camera -> [Color]
+render world screen camera@(Camera eye _ _) =
+  map (rayTrace world eye) $ getRays screen camera
+
 rayTrace :: World -> Point -> Ray -> Color
 rayTrace world eye ray@(Ray o d) 
   | null objects       = Color 0 0 0

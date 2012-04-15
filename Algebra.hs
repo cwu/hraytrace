@@ -52,6 +52,10 @@ data Color = Color Double Double Double deriving (Eq, Show)
 scaleColor :: Double -> Color -> Color
 scaleColor s (Color r g b) = Color (r*s) (g*s) (b*s)
 
+type ColorRGB = (Int, Int, Int)
+toRGB :: Color -> ColorRGB
+toRGB (Color r g b) = (floor (r * 255), floor (g * 255), floor (b * 255))
+
 instance Num Color where
   (Color r1 g1 b1) + (Color r2 g2 b2) = Color (r1+r2) (g1+g2) (b1+g2)
   (Color r1 g1 b1) - (Color r2 g2 b2) = Color (r1-r2) (g1-g2) (b1-g2)
