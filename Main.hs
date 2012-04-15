@@ -13,7 +13,7 @@ eye = o
 hit = Ray (V 0.95 0 0) (-k)
 miss = Ray eye i
 
-screen = Screen 300 300 45 (1/8)
+screen = Screen 600 300 45 (1/4)
 camera = Camera eye (-k) j
 
 
