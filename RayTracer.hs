@@ -12,14 +12,14 @@ data Scene = Scene [Object] deriving (Eq, Show)
 -- World scene lights ambient
 data World = World Scene [Light] Color deriving (Eq, Show)
 
--- Screen width height fov
-data Screen = Screen Double Double Double deriving (Eq, Show)
+-- Screen width height fov resolution
+data Screen = Screen Double Double Double Double deriving (Eq, Show)
 
 -- Camera position viewVector upVector
 data Camera = Camera Point Vector Vector deriving (Eq, Show)
 
 calculateRay :: Screen -> Camera -> Double -> Double -> Ray
-calculateRay (Screen w h fov) (Camera cp view up) x y =
+calculateRay (Screen w h fov _) (Camera cp view up) x y =
   Ray cp (norm dir)
   where
     side     = view * up
@@ -29,16 +29,28 @@ calculateRay (Screen w h fov) (Camera cp view up) x y =
     dirView  = scale distance view
     dir      = dirSide + dirUp + dirView
 
-getRays :: Screen -> Camera -> [Ray]
-getRays screen@(Screen w h _) camera = 
-  map (uncurry (calculateRay screen camera)) [(x,h-y-1) | y <- [0..h-1], x <- [0..w-1]]
+getRays :: Screen -> Camera -> [[Ray]]
+getRays screen@(Screen w h _ resolution) camera =
+  map (map getRay . dividePixel) pixels
+  where
+    getRay             = uncurry (calculateRay screen camera)
+    sqrtNumSamples :: Int
+    sqrtNumSamples     = ceiling $ 1 / resolution
+    resolution'        = 1 / (fromIntegral sqrtNumSamples)
+    lower              = - sqrtNumSamples `div` 2
+    upper              = sqrtNumSamples `div` 2
+    dividePixel (x, y) = [(x + fromIntegral x' * resolution', y + fromIntegral y' * resolution)  | y' <- [lower..upper], x' <- [lower..upper]]
+    pixels             = [(x,h-y-1) | y <- [0..h-1], x <- [0..w-1]]
 
 render :: World -> Screen -> Camera -> [Color]
 render world screen camera@(Camera eye _ _) =
-  map (rayTrace world eye) $ getRays screen camera
+  map (avg . map rayTracer) $ getRays screen camera
+  where
+    rayTracer = rayTrace world eye
+    avg xs = scaleColor (1 / (fromIntegral (length xs))) (foldl1 (+) xs)
 
 rayTrace :: World -> Point -> Ray -> Color
-rayTrace world eye ray@(Ray o d) 
+rayTrace world eye ray@(Ray o d)
   | not $ isJust closest = Color 0.2 0.2 0.2
   | otherwise          = color
   where
@@ -48,10 +60,9 @@ rayTrace world eye ray@(Ray o d)
     (diffuse, specular)                    = foldl1 (\(c1,c2) (c3,c4) -> (c1+c3, c2+c4)) $ map (calculateColor intersection object eye world) lights
     (Object _ (Material kd _ _))           = object
     color                                  = ambient * kd + diffuse + specular
-    
 
 calculateColor :: Intersection -> Object -> Point -> World -> Light -> (Color, Color)
-calculateColor intersection object eye world light 
+calculateColor intersection object eye world light
   | isJust occ                     = ((Color 0 0 0), (Color 0 0 0))
   | n `dot` l > 0 && r `dot` v > 0 = (diffuse, specular)
   | n `dot` l > 0                  = (diffuse, (Color 0 0 0))
@@ -69,7 +80,6 @@ calculateColor intersection object eye world light
     v                           = norm $ eye - p
     diffuse                     = ld * (scaleColor (l `dot` n) kd)
     specular                    = ls * (scaleColor ((r `dot` v)**shininess) ks)
-    
 
 closesetIntersection :: [Object] -> Ray -> Maybe (Intersection, Object)
 closesetIntersection objects ray

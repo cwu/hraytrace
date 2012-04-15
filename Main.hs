@@ -13,7 +13,7 @@ eye = o
 hit = Ray (V 0.95 0 0) (-k)
 miss = Ray eye i
 
-screen = Screen 300 300 45
+screen = Screen 300 300 45 (1/8)
 camera = Camera eye (-k) j
 
 
@@ -31,7 +31,7 @@ rt = rayTrace world eye
 ray = calculateRay screen camera 0 250
 
 makePpm :: Screen -> [Color] -> String
-makePpm (Screen w h _) disp = "P3\n" ++ show (floor w) ++ " " ++ show (floor h) ++ "\n255" ++ stringify (map toRGB disp)
+makePpm (Screen w h _ _) disp = "P3\n" ++ show (floor w) ++ " " ++ show (floor h) ++ "\n255" ++ stringify (map toRGB disp)
   where
     stringify [] = "\n"
     stringify ((r,g,b):xs) = "\n" ++ show r ++ " " ++ show g ++ " " ++ show b ++ stringify xs
