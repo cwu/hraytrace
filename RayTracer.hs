@@ -1,5 +1,6 @@
 module RayTracer where
 
+import Debug.Trace
 import Geometry
 import Algebra
 import Object
@@ -38,37 +39,48 @@ render world screen camera@(Camera eye _ _) =
 
 rayTrace :: World -> Point -> Ray -> Color
 rayTrace world eye ray@(Ray o d) 
-  | null objects       = Color 0 0 0
-  | null intersections = Color 0.5 0.5 0.5
+  | not $ isJust closest = Color 0.2 0.2 0.2
   | otherwise          = color
   where
-    (World (Scene objects) lights ambient)           = world
-    intersections                            = filter (isJust . fst) $ map intersectWithObject objects
-    intersectWithObject obj@(Object shape _) = (intersect ray shape, obj)
-    (Just intersection, object)                   = foldl1 (\min_ obj -> if fst obj < fst min_ then obj else min_) intersections
-    (diffuse, specular)                      = foldl1 (\(c1,c2) (c3,c4) -> (c1+c3, c2+c4)) $ map (calculateColor intersection object eye) lights
-    (Object _ (Material kd _ _)) = object
-    color = ambient * kd + diffuse + specular
+    (World (Scene objects) lights ambient) = world
+    closest                                = closesetIntersection objects ray
+    Just (intersection, object)            = closest
+    (diffuse, specular)                    = foldl1 (\(c1,c2) (c3,c4) -> (c1+c3, c2+c4)) $ map (calculateColor intersection object eye world) lights
+    (Object _ (Material kd _ _))           = object
+    color                                  = ambient * kd + diffuse + specular
     
 
-calculateColor :: Intersection -> Object -> Point -> Light -> (Color, Color)
-calculateColor intersection object eye light 
+calculateColor :: Intersection -> Object -> Point -> World -> Light -> (Color, Color)
+calculateColor intersection object eye world light 
+  | isJust occ                     = ((Color 0 0 0), (Color 0 0 0))
   | n `dot` l > 0 && r `dot` v > 0 = (diffuse, specular)
   | n `dot` l > 0                  = (diffuse, (Color 0 0 0))
   | r `dot` v > 0                  = ((Color 0 0 0), specular)
   | otherwise                      = ((Color 0 0 0), (Color 0 0 0))
   where
-    (Object shape material)    = object
-    (Material kd ks shininess) = material
-    (Light lightPos ld ls)     = light
-    (Intersection p n t)       = intersection
-    l                          = norm $ lightPos - p
-    r                          = (-l) + scale (2*(l `dot` n)) n
-    v                          = norm $ eye - p
-    diffuse                    = ld * (scaleColor (l `dot` n) kd)
-    specular                   = ls * (scaleColor ((r `dot` v)**shininess) ks)
+    (World (Scene objects) _ _) = world
+    (Object shape material)     = object
+    (Material kd ks shininess)  = material
+    (Light lightPos ld ls)      = light
+    (Intersection p n t)        = intersection
+    occ                         = closesetIntersection objects (Ray p (norm (lightPos-p)))
+    l                           = norm $ lightPos - p
+    r                           = (-l) + scale (2*(l `dot` n)) n
+    v                           = norm $ eye - p
+    diffuse                     = ld * (scaleColor (l `dot` n) kd)
+    specular                    = ls * (scaleColor ((r `dot` v)**shininess) ks)
     
 
+closesetIntersection :: [Object] -> Ray -> Maybe (Intersection, Object)
+closesetIntersection objects ray
+  | null objects       = Nothing
+  | null intersections = Nothing
+  | otherwise          = Just (intersection, object)
+  where
+    intersections                            = filter (isJust . fst) $ map intersectWithObject objects
+    intersectWithObject obj@(Object shape _) = (intersect ray shape, obj)
+    minObject obj1 obj2                      = if fst obj2 < fst obj1 then obj2 else obj1
+    (Just intersection, object)              = foldl1 minObject intersections
 
 isJust :: Maybe a -> Bool
 isJust Nothing = False
