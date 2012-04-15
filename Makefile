@@ -1,13 +1,20 @@
+OPTIMIZE_FLAGS = -fexcess-precision -O2 -optc-O3 -optc-ffast-math -funfolding-use-threshold=16
 SRC = Geometry.hs RayTracer.hs Main.hs Vector.hs
 
 all: main
 
 main: $(SRC)
-	ghc -prof -auto-all --make -o main Main.hs
+	ghc $(OPTIMIZE_FLAGS) -prof -rtsopts -auto-all --make -o $@ Main.hs
 
-test: main
+preview: main
 	@./main
-	eog display.ppm
+	@eog display.ppm
+
+test: UnitTest.hs
+	ghc -auto-all --make -o $@ $<
+
+time: main
+	time ./main
 
 clean:
-	rm -f *.o *.hi *.prof *.exe *.exe.*
+	rm -f main *.o *.hi *.prof *.exe *.exe.*

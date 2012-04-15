@@ -15,17 +15,19 @@ mkray from to = (from, norm (to - from) )
 rayPos :: Ray -> Time -> Point
 rayPos (p0, d) t = p0 + scale t d
 
-data Shape = Sphere Vector Double | Plane Vector Double deriving (Eq, Show)
+data Shape = Sphere Vector !Double
+           | Plane Vector !Double
+           deriving (Eq, Show)
 
 mkplane :: Point -> Point -> Point -> Maybe Shape
 mkplane p0 p1 p2
-	| cross == 0 	= Nothing
-	| otherwise		= Just $ Plane n d
-	where
-		(v,w) = (p1 - p0, p2 - p0)
-		cross  = v * w
-		n = norm cross
-		d = -p0 `dot` n
+  | cross == 0 = Nothing
+  | otherwise  = Just $ Plane n d
+  where
+    (v,w) = (p1 - p0, p2 - p0)
+    cross = v * w
+    n     = norm cross
+    d     = -p0 `dot` n
 
 epsilon :: Double
 epsilon = 0.0001
@@ -33,17 +35,19 @@ epsilon = 0.0001
 type Intersection = (Shape, Time)
 intersect :: Ray -> Shape -> [Intersection]
 intersect (p0, d) s@(Sphere c r)
-	| null positiveRoots		= []
-	| otherwise					= map (\x -> (s, x)) positiveRoots
-	where
-		v = p0 - c
-		roots = roots2 (sqrMag d) (scale 2 v `dot` d) (sqrMag v - r*r)
-		positiveRoots = filter (>epsilon) roots
+  | null positiveRoots = []
+  | otherwise          = map (\x -> (s, x)) positiveRoots
+  where
+    v             = p0 - c
+    roots         = roots2 (sqrMag d) (scale 2 v `dot` d) (sqrMag v - r*r)
+    positiveRoots = filter (>epsilon) roots
 
 intersect (p0, dir) s@(Plane n d)
-	| num /= 0 && den /= 0 && num / den > epsilon 	= [(s, num / den)]
-	| otherwise 									= []
-	where (num,den) = (-d - p0 `dot` n, dir `dot` n)
+  | num /= 0 && den /= 0 && num / den > epsilon   = [(s, num / den)]
+  | otherwise                                     = []
+  where
+    num = -d - p0 `dot` n
+    den = dir `dot` n
 
 closest :: [(Shape, Time)] -> (Shape, Time)
 closest = foldl1 (\(s1,t1) (s2,t2) -> if t1 < t2 then (s1,t1) else (s2,t2))
@@ -53,8 +57,9 @@ normal (Sphere c _) p = p - c
 
 roots2 :: (Ord a, Floating a) => a -> a -> a -> [a]
 roots2 a b c
-	| discrim <  0 	= []
-	| discrim == 0 	= [- b / (2 * a)]
-	| otherwise		= [(-b - sqrt discrim) / (2 * a), (-b - sqrt discrim) / (2 * a)]
-	where discrim = b*b - 4 * a * c
+  | discrim <  0 = []
+  | discrim == 0 = [- b / (2 * a)]
+  | otherwise    = [(-b - sqrt discrim) / (2 * a), (-b - sqrt discrim) / (2 * a)]
+  where
+    discrim = b*b - 4 * a * c
 

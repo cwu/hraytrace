@@ -2,24 +2,11 @@ import Vector
 import Geometry
 import RayTracer
 
-{-
-r = [ray_mk (V 0 0 0) (V 1 0 0), ray_mk (V 0 0 0) (V (-1) 0 0)]
-s = [Sphere (V 10 2 0) 1, Sphere (V 10 1 0) 1, Sphere (V (-10) 1 0) 1, Sphere (V 10 2 0) 1, Sphere (V 10 (-2) 0) 1, Sphere (V (-10) 2 0) 1, Sphere (V 0 0 0) 1, Sphere (V 1 0 0) 1, Sphere (V (-1) 0 0) 1, Sphere (V 2 0 0) 1, Sphere (V (-2) 0 0) 1]
-
-answers = [[Nothing, Nothing], [Just 10, Nothing], [Nothing, Just 10], [Nothing, Nothing], [Nothing, Nothing], [Nothing, Nothing], [Nothing, Nothing], [Just 0, Nothing], [Nothing, Just 0], [Just 1, Nothing], [Nothing, Just 1]]
-
-results :: [
-results = map (\y -> map (intersect y) r) s
-
-res = filter (\(x,_,_) -> not x) $ zip3 (map (\(a,b) -> a == b) $ zip answers results) s (zip results answers)
-
-main = if (not . null) res then putStrLn "Failure" else putStrLn "Pass"
--}
 objs = [(Sphere (V 100 0 0) 80, green),(Sphere (V 10 1 0) 6, blue)]
 lights = [(V 0 10 0, (0.1, 0.1, 0.1))]
 world = (objs, lights)
 camera = (o, i, k)
-screen = (100, 100, 6.0, 0.3)
+screen = (200, 200, 20.0, 0.3)
 pixelrays = mkpixelrays camera screen
 
 fst3 (x,_,_) = x
