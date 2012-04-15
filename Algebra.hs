@@ -1,4 +1,7 @@
+module Algebra where
+
 data Vector = V !Double !Double !Double deriving (Eq, Show)
+type Point = Vector
 
 instance Num Vector where
   (V x y z) + (V a b c) = V (x+a) (y+b) (z+c)
@@ -30,3 +33,11 @@ norm v = scale (1 / mag v) v
 
 proj :: Vector -> Vector -> Vector
 proj v u = scale ((v `dot` u) / sqrMag u) u
+
+
+-- Ray start direction
+data Ray = Ray Point Vector deriving (Eq, Show)
+
+
+-- Intersection intersectPoint normal distance
+data Intersection = Intersection Point Vector Double deriving (Eq, Show)
