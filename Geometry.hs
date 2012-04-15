@@ -1,3 +1,4 @@
+{-# LANGUAGE ForeignFunctionInterface #-}
 module Geometry where
 import Algebra
 
@@ -16,12 +17,14 @@ intersect (Ray o d) (Sphere c r)
     positiveRoots = filter (>epsilon) roots
     t             = minimum roots
     p             = o + scale t d
-  
 
-roots2 :: (Ord a, Floating a) => a -> a -> a -> [a]
+roots2 :: Double -> Double -> Double -> [Double]
 roots2 a b c
   | discrim < 0 = []
   | discrim == 0 = [- b / (2 * a)]
-  | otherwise   = [(-b - sqrt discrim) / (2 * a), (-b - sqrt discrim) / (2 * a)]
+  | otherwise   = [(-b - c_sqrt discrim) / (2 * a), (-b - c_sqrt discrim) / (2 * a)]
   where
-    discrim = b*b - 4*a*c
+    discrim     = b*b - 4*a*c
+
+foreign import ccall unsafe "math.h sqrt"
+    c_sqrt :: Double -> Double

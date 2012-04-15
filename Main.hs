@@ -18,7 +18,7 @@ camera = Camera eye (-k) j
 
 
 sphere1 = Sphere (V 0 0 (-4)) 1
-sphere2 = Sphere (V 2.5 0 (-4)) 0.5 
+sphere2 = Sphere (V 2.5 0 (-4)) 0.5
 material1 = Material (Color 1.0 0.0 0.0) (Color 1 1 1) 20
 material2 = Material (Color 0.0 1.0 0.0) (Color 1 1 1) 20
 scene = Scene [(Object sphere1 material1), (Object sphere2 material2)]

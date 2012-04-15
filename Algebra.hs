@@ -1,3 +1,5 @@
+{-# LANGUAGE ForeignFunctionInterface #-}
+
 module Algebra where
 
 data Vector = V !Double !Double !Double deriving (Eq, Show)
@@ -34,10 +36,8 @@ norm v = scale (1 / mag v) v
 proj :: Vector -> Vector -> Vector
 proj v u = scale ((v `dot` u) / sqrMag u) u
 
-
 -- Ray start direction
 data Ray = Ray Point Vector deriving (Eq, Show)
-
 
 -- Intersection intersectPoint normal distance
 data Intersection = Intersection Point Vector Double deriving (Eq, Show)
@@ -54,7 +54,13 @@ scaleColor s (Color r g b) = Color (r*s) (g*s) (b*s)
 
 type ColorRGB = (Int, Int, Int)
 toRGB :: Color -> ColorRGB
-toRGB (Color r g b) = (floor (r * 255), floor (g * 255), floor (b * 255))
+toRGB (Color r g b) = (floor' (r * 255), floor' (g * 255), floor' (b * 255))
+
+floor' :: Double -> Int
+floor' x = (fromIntegral . (truncate :: Double -> Int)) $ c_floor x
+
+foreign import ccall unsafe "math.h floor"
+    c_floor :: Double -> Double
 
 instance Num Color where
   (Color r1 g1 b1) + (Color r2 g2 b2) = Color (r1+r2) (g1+g2) (b1+g2)
