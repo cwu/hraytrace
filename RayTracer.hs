@@ -46,33 +46,31 @@ render world screen camera@(Camera eye _ _) =
   map (clampColor . avg . map rayTracer) $ getRays screen camera
   where
     rayTracer = rayTrace world eye
-    avg xs = scaleColor (1 / fromIntegral (length xs)) (foldl1 (+) xs)
+    avg xs = scaleColor (1 / fromIntegral (length xs)) (sum xs)
 
 rayTrace :: World -> Point -> Ray -> Color
-rayTrace world eye ray@(Ray o d)
+rayTrace (World (Scene objects) lights ambient) eye ray
   | isNothing closest = Color 0.2 0.2 0.2
-  | otherwise         = color
+  | otherwise         = ambient * kd + diffuse + specular
   where
-    (World (Scene objects) lights ambient) = world
     closest                                = closesetIntersection objects ray
     Just (intersection, object)            = closest
-    (diffuse, specular)                    = foldl1 (\(c1,c2) (c3,c4) -> (c1+c3, c2+c4)) $ map (calculateColor intersection object eye world) lights
+    (diffuse, specular)                    = foldl1 sumTuple2 diffuseAndSpecularColors
+    diffuseAndSpecularColors               = map (calculateColor intersection object eye objects) lights
+    calculateColor' = calculateColor intersection object eye objects
     (Object _ (Material kd _ _))           = object
-    color                                  = ambient * kd + diffuse + specular
+    sumTuple2 (f1, s1) (f2, s2)            = (f1 + f2, s1 + s2)
 
-calculateColor :: Intersection -> Object -> Point -> World -> Light -> (Color, Color)
-calculateColor intersection object eye world light
+calculateColor :: Intersection -> Object -> Point -> [Object] -> Light ->
+                  (Color, Color)
+calculateColor (Intersection p n t) (Object _ (Material kd ks shininess))
+               eye objects (Light lightPos ld ls)
   | isJust occ                     = (Color 0 0 0 , Color 0 0 0)
   | n `dot` l > 0 && r `dot` v > 0 = (diffuse     , specular)
   | n `dot` l > 0                  = (diffuse     , Color 0 0 0)
   | r `dot` v > 0                  = (Color 0 0 0 , specular)
   | otherwise                      = (Color 0 0 0 , Color 0 0 0)
   where
-    (World (Scene objects) _ _) = world
-    (Object shape material)     = object
-    (Material kd ks shininess)  = material
-    (Light lightPos ld ls)      = light
-    (Intersection p n t)        = intersection
     occ                         = closesetIntersection objects (Ray p l)
     l                           = norm $ lightPos - p
     r                           = (-l) + scale (2*(l `dot` n)) n
