@@ -38,7 +38,9 @@ getRays screen@(Screen w h _ resolution) camera =
     resolution'        = 1 / fromIntegral sqrtNumSamples
     lower              = - sqrtNumSamples `div` 2
     upper              = sqrtNumSamples `div` 2
-    dividePixel (x, y) = [(x + fromIntegral x' * resolution', y + fromIntegral y' * resolution)  | y' <- [lower..upper], x' <- [lower..upper]]
+    dividePixel (x, y) = [(x + fromIntegral x' * resolution',
+                           y + fromIntegral y' * resolution') |
+                          y' <- [lower..upper], x' <- [lower..upper]]
     pixels             = [(x,h-y-1) | y <- [0..h-1], x <- [0..w-1]]
 
 render :: World -> Screen -> Camera -> [Color]
@@ -50,7 +52,7 @@ render world screen camera@(Camera eye _ _) =
 
 rayTrace :: World -> Point -> Ray -> Color
 rayTrace (World (Scene objects) lights ambient) eye ray
-  | isNothing closest = Color 0.2 0.2 0.2
+  | isNothing closest = ambient
   | otherwise         = ambient * kd + diffuse + specular
   where
     closest                                = closesetIntersection objects ray
