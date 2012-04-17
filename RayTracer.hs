@@ -52,7 +52,7 @@ render world screen camera@(Camera eye _ _) =
 
 rayTrace :: World -> Point -> Ray -> Color
 rayTrace (World (Scene objects) lights ambient) eye ray
-  | isNothing closest = ambient
+  | isNothing closest = Color 0 0 0
   | otherwise         = ambient * kd + diffuse + specular
   where
     closest                                = closesetIntersection objects ray
@@ -73,12 +73,12 @@ calculateColor (Intersection p n t) (Object _ (Material kd ks shininess))
   | r `dot` v > 0                  = (Color 0 0 0 , specular)
   | otherwise                      = (Color 0 0 0 , Color 0 0 0)
   where
-    occ                         = closesetIntersection objects (Ray p l)
-    l                           = norm $ lightPos - p
-    r                           = (-l) + scale (2*(l `dot` n)) n
-    v                           = norm $ eye - p
-    diffuse                     = ld * scaleColor (l `dot` n) kd
-    specular                    = ls * scaleColor ((r `dot` v)**shininess) ks
+    occ      = closesetIntersection objects (Ray p l)
+    l        = norm $ lightPos - p
+    r        = (-l) + scale (2*(l `dot` n)) n
+    v        = norm $ eye - p
+    diffuse  = ld * scaleColor (l `dot` n) kd
+    specular = ls * scaleColor ((r `dot` v)**shininess) ks
 
 closesetIntersection :: [Object] -> Ray -> Maybe (Intersection, Object)
 closesetIntersection objects ray
