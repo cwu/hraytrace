@@ -13,6 +13,9 @@ instance Num Vector where
   signum                = error "signum not implemented"
   fromInteger x         = V (fromInteger x) (fromInteger x) (fromInteger x)
 
+instance Ord Vector where
+  compare v1 v2 = compare (mag v1) (mag v2)
+
 dot :: Vector -> Vector -> Double
 dot (V x y z) (V a b c) = x * a + y * b + z * c
 
@@ -24,6 +27,9 @@ mag = sqrt . sqrMag
 
 scale :: Double -> Vector -> Vector
 scale s (V x y z) = V (x*s) (y*s) (z*s)
+
+plusScalar :: Double -> Vector -> Vector
+plusScalar s (V x y z) = V (x+s) (y+s) (z+s)
 
 norm :: Vector -> Vector
 norm (V 0 0 0) = V 0 0 0
