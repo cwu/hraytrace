@@ -10,6 +10,12 @@ Features
 * Specular lighting
 * Shadows (Simple obstructions)
 
+Supported Shapes
+----------------
+
+* Spheres
+* Cubes
+
 Pending Features
 ----------------
 * Polygons
@@ -19,7 +25,7 @@ Pending Features
 
 Progress
 --------
-Super sampled at 256 rays / pixel taking 190 secs
+Super sampled at 256 rays / pixel taking 150 secs
 ![render](https://github.com/cwu/hraytrace/raw/master/renders/current.png)
 
 Authors
