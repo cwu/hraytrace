@@ -55,7 +55,7 @@ rayTrace (World (Scene objects) lights ambient) eye ray
   | isNothing closest = Color 0 0 0
   | otherwise         = ambient * kd + diffuse + specular
   where
-    closest                                = closesetIntersection objects ray
+    closest                                = closestIntersection objects ray
     Just (intersection, object)            = closest
     (diffuse, specular)                    = foldl1 sumTuple2 diffuseAndSpecularColors
     diffuseAndSpecularColors               = map (calculateColor intersection object eye objects) lights
@@ -73,15 +73,15 @@ calculateColor (Intersection p n t) (Object _ (Material kd ks shininess))
   | r `dot` v > 0                  = (Color 0 0 0 , specular)
   | otherwise                      = (Color 0 0 0 , Color 0 0 0)
   where
-    occ      = closesetIntersection objects (Ray p l)
+    occ      = closestIntersection objects (Ray p l)
     l        = norm $ lightPos - p
     r        = (-l) + scale (2*(l `dot` n)) n
     v        = norm $ eye - p
     diffuse  = ld * scaleColor (l `dot` n) kd
     specular = ls * scaleColor ((r `dot` v)**shininess) ks
 
-closesetIntersection :: [Object] -> Ray -> Maybe (Intersection, Object)
-closesetIntersection objects ray
+closestIntersection :: [Object] -> Ray -> Maybe (Intersection, Object)
+closestIntersection objects ray
   | null objects       = Nothing
   | null intersections = Nothing
   | otherwise          = Just (intersection, object)
