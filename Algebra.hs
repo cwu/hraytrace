@@ -62,9 +62,9 @@ foreign import ccall unsafe "math.h floor"
   c_floor :: Double -> Double
 
 instance Num Color where
-  (Color r1 g1 b1) + (Color r2 g2 b2) = Color (r1+r2) (g1+g2) (b1+g2)
-  (Color r1 g1 b1) - (Color r2 g2 b2) = Color (r1-r2) (g1-g2) (b1-g2)
-  (Color r1 g1 b1) * (Color r2 g2 b2) = Color (r1*r2) (g1*g2) (b1*g2)
+  (Color r1 g1 b1) + (Color r2 g2 b2) = Color (r1+r2) (g1+g2) (b1+b2)
+  (Color r1 g1 b1) - (Color r2 g2 b2) = Color (r1-r2) (g1-g2) (b1-b2)
+  (Color r1 g1 b1) * (Color r2 g2 b2) = Color (r1*r2) (g1*g2) (b1*b2)
   abs (Color r g b)                   = Color (abs r) (abs g) (abs b)
   signum _                            = error "signum Color not implemented"
   fromInteger x                       = Color (fromIntegral x) (fromIntegral x) (fromIntegral x)
