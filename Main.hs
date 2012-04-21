@@ -10,10 +10,10 @@ k = V 0 0 1
 o = V 0 0 0
 
 eye = o
-hit = Ray eye (norm ((V (-1.7) 0.3 (-3.4)) - eye))
-miss = Ray eye (norm ((V 0 1.2 (-4)) - eye))
+hit = Ray eye (norm (V (-1.7) 0.3 (-3.4) - eye))
+miss = Ray eye (norm (V 0 1.2 (-4) - eye))
 
-screen = Screen 400 200 45 (1)
+screen = Screen 400 200 45 1
 camera = Camera eye (-k) j
 
 
