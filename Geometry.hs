@@ -7,7 +7,8 @@ import Debug.Trace
 epsilon = 1e-4
 
 data Shape = Sphere Point Double -- Sphere center radius
-           | Cube Point Double -- Cube position size
+           | Cube Point Double   -- Cube position size
+           | Plane Point Vector  -- Plane point normal
            deriving (Eq, Show)
 
 intersect :: Ray -> Shape -> Maybe Intersection
@@ -42,17 +43,27 @@ intersect (Ray o@(V ox oy oz) d@(V dx dy dz)) (Cube c@(V cx cy cz) s)
     p               = o + scale tmin d
     offsetP         = p + scale epsilon d
 
+intersect (Ray o d) (Plane p0 n)
+  | directToPlane `dot` d < epsilon = Nothing
+  | otherwise                       = Just (Intersection p intersectNorm dist)
+  where
+    toPlaneAlongRay = scale (abs (mag directToPlane / d `dot` n)) d
+    directToPlane   = proj (p0 - o) n
+    p               = o + toPlaneAlongRay
+    dist            = mag toPlaneAlongRay
+    intersectNorm   = norm (-directToPlane)
+
 isPointInsideBox :: Point -> Point -> Point -> Bool
 isPointInsideBox (V px py pz) (V minx miny minz) (V maxx maxy maxz) =
   px >= minx && px <= maxx && py >= miny && py <= maxy && pz >= minz && pz <= maxz
 
 roots2 :: Double -> Double -> Double -> [Double]
 roots2 a b c
-  | discrim < 0 = []
+  | discrim < 0  = []
   | discrim == 0 = [- b / (2 * a)]
-  | otherwise   = [(-b - c_sqrt discrim) / (2 * a), (-b - c_sqrt discrim) / (2 * a)]
+  | otherwise    = [(-b - c_sqrt discrim) / (2 * a), (-b - c_sqrt discrim) / (2 * a)]
   where
-    discrim     = b*b - 4*a*c
+    discrim = b*b - 4*a*c
 
 foreign import ccall unsafe "math.h sqrt"
     c_sqrt :: Double -> Double

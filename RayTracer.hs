@@ -52,16 +52,16 @@ render world screen camera@(Camera eye _ _) =
 
 rayTrace :: World -> Point -> Ray -> Color
 rayTrace (World (Scene objects) lights ambient) eye ray
-  | isNothing closest = Color 0 0 0
+  | isNothing closest = ambient
   | otherwise         = ambient * kd + diffuse + specular
   where
-    closest                                = closestIntersection objects ray
-    Just (intersection, object)            = closest
-    (diffuse, specular)                    = foldl1 sumTuple2 diffuseAndSpecularColors
-    diffuseAndSpecularColors               = map (calculateColor intersection object eye objects) lights
-    calculateColor' = calculateColor intersection object eye objects
-    (Object _ (Material kd _ _))           = object
-    sumTuple2 (f1, s1) (f2, s2)            = (f1 + f2, s1 + s2)
+    closest                      = closestIntersection objects ray
+    Just (intersection, object)  = closest
+    (diffuse, specular)          = foldl1 sumTuple2 diffuseAndSpecularColors
+    diffuseAndSpecularColors     = map (calculateColor intersection object eye objects) lights
+    calculateColor'              = calculateColor intersection object eye objects
+    (Object _ (Material kd _ _)) = object
+    sumTuple2 (f1, s1) (f2, s2)  = (f1 + f2, s1 + s2)
 
 calculateColor :: Intersection -> Object -> Point -> [Object] -> Light ->
                   (Color, Color)

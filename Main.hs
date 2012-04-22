@@ -9,26 +9,38 @@ j = V 0 1 0
 k = V 0 0 1
 o = V 0 0 0
 
-eye = o
-hit = Ray eye (norm (V (-1.7) 0.3 (-3.4) - eye))
+eye  = o
+hit  = Ray eye (norm (V (-1.7) 0.3 (-3.4) - eye))
 miss = Ray eye (norm (V 0 1.2 (-4) - eye))
+st   = Ray eye (norm (V 0 (-0.1) (-1)))
 
 screen = Screen 400 200 45 1
 camera = Camera eye (-k) j
 
+white  = Color 1 1 1
+red    = Color 1 0 0
+blue   = Color 0 1 0
+green  = Color 0 0 1
+purple = red + green
 
-sphere1 = Sphere (V 0 0 (-4)) 1
-sphere2 = Sphere (V 2.5 0 (-4)) 0.5
-material1 = Material (Color 1.0 0.0 0.0) (Color 1 1 1) 20
-material2 = Material (Color 0.0 1.0 0.0) (Color 1 1 1) 20
-material3 = Material (Color 0.0 0.0 1.0) (Color 1 1 1) 20
-cube = Cube (V (-2) 0.3 (-4)) 0.8
-scene = Scene [Object sphere1 material1, Object sphere2 material2, Object cube material3]
+sphere1   = Sphere (V 0 0 (-4)) 1
+sphere2   = Sphere (V 2.5 0 (-4)) 0.5
+plane     = Plane (V 0 (-3) 0) j
+cube      = Cube (V (-2) 0.3 (-4)) 0.8
+objects   = [
+    Object sphere1 (Material red    white 20),
+    Object sphere2 (Material green  white 20),
+    Object cube    (Material blue   white 20),
+    Object plane   (Material purple white 20)
+  ]
+
+scene = Scene objects
 light = Light (V 1300 200 200) (Color 0.8 0.8 0.8) (Color 0.8 0.8 0.8)
-world = World scene [light] (Color 0.1 0.1 0.1)
+world = World scene [light] (Color 0.3 0.3 0.3)
 
 -- debug stuff
 rt = rayTrace world eye
+ci = closestIntersection objects
 
 ray = calculateRay screen camera 0 250
 
