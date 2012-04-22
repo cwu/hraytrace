@@ -29,19 +29,22 @@ intersect (Ray o@(V ox oy oz) d@(V dx dy dz)) (Cube c@(V cx cy cz) s)
   | not $ isPointInsideBox offsetP c (V (cx+s) (cy+s) (cz+s)) = Nothing
   | otherwise                                                 = Just (Intersection p nmin tmin)
   where
-    inf             = 1/0
+    (i, j, k)       = (V 1 0 0, V 0 1 0, V 0 0 1)
     dist a b speed  = (b - a)/speed
     (tx1, ty1, tz1) = (dist ox cx dx, dist oy cy dy, dist oz cz dz)
     (tx2, ty2, tz2) = (dist ox (cx+s) dx, dist oy (cy+s) dy, dist oz (cz+s) dz)
-    (xmin, xmax)    = if tx1 < tx2 then ((tx1, V (-1) 0 0), (tx2, V 1 0 0)) else ((tx2, V 1 0 0), (tx1, V (-1) 0 0))
-    (ymin, ymax)    = if ty1 < ty2 then ((ty1, V 0 (-1) 0), (ty2, V 0 1 0)) else ((ty2, V 0 1 0), (ty1, V 0 (-1) 0))
-    (zmin, zmax)    = if tz1 < tz2 then ((tz1, V 0 0 (-1)), (tz2, V 0 0 1)) else ((tz2, V 0 0 1), (tz1, V 0 0 (-1)))
-    mins            = filter (\(t, _) -> t < inf && t > (-inf)) [xmin, ymin, zmin]
-    maxes           = filter (\(t, _) -> t < inf && t > (-inf)) [xmax, ymax, zmax]
+    (xmin, xmax)    = if tx1 < tx2 then ((tx1, -i), (tx2, i)) else ((tx2, i), (tx1, -i))
+    (ymin, ymax)    = if ty1 < ty2 then ((ty1, -j), (ty2, j)) else ((ty2, j), (ty1, -j))
+    (zmin, zmax)    = if tz1 < tz2 then ((tz1, -k), (tz2, k)) else ((tz2, k), (tz1, -k))
+    mins            = filter (not . isInf . fst) [xmin, ymin, zmin]
+    maxes           = filter (not . isInf . fst) [xmax, ymax, zmax]
+    isInf x         = abs x == 1/0
     (tmin, nmin)    = maximum mins
     (tmax, nmax)    = minimum maxes
     p               = o + scale tmin d
     offsetP         = p + scale epsilon d
+    isPointInsideBox (V px py pz) (V minx miny minz) (V maxx maxy maxz) =
+      px >= minx && px <= maxx && py >= miny && py <= maxy && pz >= minz && pz <= maxz
 
 intersect (Ray o d) (Plane p0 n)
   | directToPlane `dot` d < epsilon = Nothing
@@ -52,10 +55,6 @@ intersect (Ray o d) (Plane p0 n)
     p               = o + toPlaneAlongRay
     dist            = mag toPlaneAlongRay
     intersectNorm   = norm (-directToPlane)
-
-isPointInsideBox :: Point -> Point -> Point -> Bool
-isPointInsideBox (V px py pz) (V minx miny minz) (V maxx maxy maxz) =
-  px >= minx && px <= maxx && py >= miny && py <= maxy && pz >= minz && pz <= maxz
 
 roots2 :: Double -> Double -> Double -> [Double]
 roots2 a b c
