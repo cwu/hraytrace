@@ -26,7 +26,7 @@ Pending Features
 
 Progress
 --------
-Super sampled at 256 rays / pixel
+Super sampled at 256 rays / pixel  
 ![render](https://github.com/cwu/hraytrace/raw/master/renders/current.png)
 
 Authors
