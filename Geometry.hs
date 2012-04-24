@@ -9,6 +9,7 @@ epsilon = 1e-4
 data Shape = Sphere Point Double -- Sphere center radius
            | Cube Point Double   -- Cube position size
            | Plane Point Vector  -- Plane point normal
+           | Face [Point] Vector -- Face points normal
            deriving (Eq, Show)
 
 intersect :: Ray -> Shape -> Maybe Intersection
@@ -55,6 +56,34 @@ intersect (Ray o d) (Plane p0 n)
     p               = o + toPlaneAlongRay
     dist            = mag toPlaneAlongRay
     intersectNorm   = norm (-directToPlane)
+
+intersect (Ray o d) face@(Face points@(p0 : _ ) n)
+  | directToPlane `dot` d < epsilon = Nothing
+  | not $ isPointInsideFace p face  = Nothing
+  | otherwise                       = Just (Intersection p intersectNorm dist)
+  where
+    toPlaneAlongRay = scale (abs (mag directToPlane / d `dot` n)) d
+    directToPlane   = proj (p0 - o) n
+    p               = o + toPlaneAlongRay
+    dist            = mag toPlaneAlongRay
+    intersectNorm   = norm (-directToPlane)
+
+-- | isPointInsideFace checks if a point is inside of a face. A point along
+-- the edge of the face is considered NOT inside. this produces an edge case
+-- where the rotatingVectors will be opposite directions and the cross product
+-- will be 0.
+--
+-- assumes the list of points that make up the face are in a plane
+isPointInsideFace :: Point -> Shape -> Bool
+isPointInsideFace p (Face points@(p0 : ps) n) = consistentSigns directionSigns
+  where
+    consistentSigns []           = True
+    consistentSigns [x]          = True
+    consistentSigns (x:y:xs)     = signum x == signum y && consistentSigns (y:xs)
+    makeRotatingVectors (p1, p2) = (p1 - p, p2 - p)
+    rotatingVectors              = map makeRotatingVectors $ zip points (ps ++ [p0])
+    crosses                      = map (uncurry cross) rotatingVectors
+    directionSigns               = map (dot n) crosses
 
 roots2 :: Double -> Double -> Double -> [Double]
 roots2 a b c

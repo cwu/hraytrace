@@ -22,16 +22,19 @@ red    = Color 1 0 0
 blue   = Color 0 1 0
 green  = Color 0 0 1
 purple = red + green
+yellow = red + blue
 
 sphere1   = Sphere (V 0 0 (-4)) 1
 sphere2   = Sphere (V 2.5 0 (-4)) 0.5
 plane     = Plane (V 0 (-3) 0) j
 cube      = Cube (V (-2) 0.3 (-4)) 0.8
-objects   = [
-    Object sphere1 (Material red    white 20),
-    Object sphere2 (Material green  white 20),
-    Object cube    (Material blue   white 20),
-    Object plane   (Material purple white 20)
+triangle  = Face [V (-1) 1 (-4), V 1 1 (-4), V 0 2 (-4)] (-k)
+objects   =
+  [ Object sphere1  (Material red    white 20)
+  , Object sphere2  (Material green  white 20)
+  , Object cube     (Material blue   white 20)
+  , Object plane    (Material purple white 20)
+  , Object triangle (Material yellow  white 20)
   ]
 
 scene = Scene objects
@@ -57,4 +60,6 @@ colors = render world screen camera
 
 ppm = traceToFile screen colors
 
-main = ppm
+main = do
+  putStrLn "RayTracing ..."
+  ppm

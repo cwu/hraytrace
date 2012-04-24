@@ -8,7 +8,7 @@ type Point = Vector
 instance Num Vector where
   (V x y z) + (V a b c) = V (x+a) (y+b) (z+c)
   (V x y z) - (V a b c) = V (x-a) (y-b) (z-c)
-  (V x y z) * (V a b c) = V (y * c - z * b) (z * a - x * c) (x * b - y * a)
+  (*)                   = cross
   abs _                 = error "abs Vector not impelemented"
   signum                = error "signum not implemented"
   fromInteger x         = V (fromInteger x) (fromInteger x) (fromInteger x)
@@ -18,6 +18,9 @@ instance Ord Vector where
 
 dot :: Vector -> Vector -> Double
 dot (V x y z) (V a b c) = x * a + y * b + z * c
+
+cross :: Vector -> Vector -> Vector
+cross (V x y z) (V a b c) =  V (y * c - z * b) (z * a - x * c) (x * b - y * a)
 
 sqrMag :: Vector -> Double
 sqrMag v = v `dot` v
