@@ -16,10 +16,10 @@ Supported Shapes
 * Spheres
 * Cubes
 * Planes
+* Polygons
 
 Pending Features
 ----------------
-* Polygons
 * Reflection
 * Refraction
 * Global illumination

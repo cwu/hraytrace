@@ -1,15 +1,20 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+
 module Geometry where
+
+import Data.Maybe (isJust)
 import Algebra
 
 import Debug.Trace
 
 epsilon = 1e-4
 
+data Face  = Face [Point] Vector -- Face points normal
+           deriving (Eq, Show)
 data Shape = Sphere Point Double -- Sphere center radius
            | Cube Point Double   -- Cube position size
            | Plane Point Vector  -- Plane point normal
-           | Face [Point] Vector -- Face points normal
+           | Polygon [Face]      -- Polygon faces
            deriving (Eq, Show)
 
 intersect :: Ray -> Shape -> Maybe Intersection
@@ -57,7 +62,14 @@ intersect (Ray o d) (Plane p0 n)
     dist            = mag toPlaneAlongRay
     intersectNorm   = norm (-directToPlane)
 
-intersect (Ray o d) face@(Face points@(p0 : _ ) n)
+intersect ray (Polygon faces)
+  | null justIntersections = Nothing
+  | otherwise              = minimum justIntersections
+  where
+    justIntersections = filter isJust $ map (intersectFace ray) faces
+
+intersectFace :: Ray -> Face -> Maybe Intersection
+intersectFace (Ray o d) face@(Face points@(p0 : _ ) n)
   | directToPlane `dot` d < epsilon = Nothing
   | not $ isPointInsideFace p face  = Nothing
   | otherwise                       = Just (Intersection p intersectNorm dist)
@@ -74,7 +86,7 @@ intersect (Ray o d) face@(Face points@(p0 : _ ) n)
 -- will be 0.
 --
 -- assumes the list of points that make up the face are in a plane
-isPointInsideFace :: Point -> Shape -> Bool
+isPointInsideFace :: Point -> Face -> Bool
 isPointInsideFace p (Face points@(p0 : ps) n) = consistentSigns directionSigns
   where
     consistentSigns []           = True
