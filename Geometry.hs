@@ -9,7 +9,7 @@ import Debug.Trace
 
 epsilon = 1e-4
 
-data Face  = Face [Point] Vector -- Face points normal
+data Face  = Face [Point]        -- Face points
            deriving (Eq, Show)
 data Shape = Sphere Point Double -- Sphere center radius
            | Cube Point Double   -- Cube position size
@@ -69,16 +69,17 @@ intersect ray (Polygon faces)
     justIntersections = filter isJust $ map (intersectFace ray) faces
 
 intersectFace :: Ray -> Face -> Maybe Intersection
-intersectFace (Ray o d) face@(Face points@(p0 : _ ) n)
-  | directToPlane `dot` d < epsilon = Nothing
-  | not $ isPointInsideFace p face  = Nothing
-  | otherwise                       = Just (Intersection p intersectNorm dist)
+intersectFace (Ray o d) face@(Face points@(p0 : p1 : p2 : _ ))
+  | directToPlane `dot` d < epsilon  = Nothing
+  | not $ isPointInsideFace p face n = Nothing
+  | otherwise                        = Just (Intersection p intersectNorm dist)
   where
     toPlaneAlongRay = scale (abs (mag directToPlane / d `dot` n)) d
     directToPlane   = proj (p0 - o) n
     p               = o + toPlaneAlongRay
     dist            = mag toPlaneAlongRay
     intersectNorm   = norm (-directToPlane)
+    n               = norm $ (p0 - p1) `cross` (p2 - p1)
 
 -- | isPointInsideFace checks if a point is inside of a face. A point along
 -- the edge of the face is considered NOT inside. this produces an edge case
@@ -86,8 +87,8 @@ intersectFace (Ray o d) face@(Face points@(p0 : _ ) n)
 -- will be 0.
 --
 -- assumes the list of points that make up the face are in a plane
-isPointInsideFace :: Point -> Face -> Bool
-isPointInsideFace p (Face points@(p0 : ps) n) = consistentSigns directionSigns
+isPointInsideFace :: Point -> Face -> Vector -> Bool
+isPointInsideFace p (Face points@(p0 : ps)) n = consistentSigns directionSigns
   where
     consistentSigns []           = True
     consistentSigns [x]          = True
